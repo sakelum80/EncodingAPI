@@ -28,36 +28,35 @@ namespace Encoding.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult GenerateToken([FromBody] Models.LoginRequest request)
         {
-            // 1. Automatic model validation
+            // Automatic model validation
             if (!ModelState.IsValid)
             {
                 _logger.LogWarning("Invalid request: {Errors}", ModelState.Values);
                 return BadRequest(ModelState);
             }
 
-            // 2. Manual email format validation (redundant but secure)
+            // Manual email format validation (redundant but secure)
             if (!new EmailAddressAttribute().IsValid(request.Email))
             {
                 _logger.LogWarning("Invalid email format: {Email}", request.Email);
                 return BadRequest("Invalid email format");
             }
 
-            // 3. Authenticate user (replace with your real user store)
+            // Authenticate user (replace with your real user store)
             if (!AuthenticateUser(request.Email, request.Password))
             {
                 _logger.LogWarning("Authentication failed for {Email}", request.Email);
                 return Unauthorized("Invalid credentials");
             }
 
-            // 4. Generate token
+            // Generate token
             var token = GenerateJwtToken(request.Email);
             return Ok(new { token });
         }
 
         private bool AuthenticateUser(string email, string password)
         {
-            // Replace with actual user store check
-            return email == "admin@gmail.com" && password == "admin123!";
+            return email == _config["Login:Email"] && password == _config["Login:Password"];
         }
 
         private string GenerateJwtToken(string email)
